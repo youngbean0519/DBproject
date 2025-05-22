@@ -1,6 +1,7 @@
 import os
 
 class Config:
+#    DEBUG = False
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
     if not SQLALCHEMY_DATABASE_URI:
         raise RuntimeError("DATABASE_URL is not set")
