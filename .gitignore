@@ -1,8 +1,8 @@
 venv/
-migrations/
 __pycache__/
 .vscode/
 .env
 *.py[cod]
+*.pyc
 .DS_Store
 Thumbs.db
