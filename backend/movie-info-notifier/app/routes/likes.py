@@ -19,52 +19,70 @@ def decode_token(request):
         return None, str(e)
 
 @likes_bp.route('', methods=['POST'])
-def like_movie():
+def like_item():
     user_id, error = decode_token(request)
     if error:
         return jsonify({'error': error}), 401
 
     data = request.get_json()
-    movie_id = data.get('movie_id')
+    target_type = data.get('target_type')  # 'movie', 'director', 'genre'
+    target_value = data.get('target_value')
 
-    if not movie_id:
-        return jsonify({'error': 'movie_id is required'}), 400
+    if not target_type or not target_value:
+        return jsonify({'error': 'target_type and target_value are required'}), 400
     
-    existing = Like.query.filter_by(user_id=user_id, target_type='movie', target_value=movie_id).first()
+    if target_type not in ['movie', 'director', 'genre']:
+        return jsonify({'error': 'Invalid target_type. Must be one of: movie, director, genre'}), 400
+    
+    existing = Like.query.filter_by(user_id=user_id, target_type=target_type, target_value=target_value).first()
     if existing:
-        return jsonify({'message': 'Movie already liked'}), 200
+        return jsonify({'message': f'{target_type.capitalize()} already liked'}), 200
     
-    new_like = Like(user_id=user_id, target_type='movie', target_value=movie_id)
+    new_like = Like(user_id=user_id, target_type=target_type, target_value=target_value)
     db.session.add(new_like)
     db.session.commit()
 
-    return jsonify({'message': 'Movie liked successfully'}), 201
+    return jsonify({'message': f'{target_type.capitalize()} liked successfully'}), 201
 
 @likes_bp.route('', methods=['DELETE'])
-def unlike_movie():
+def unlike_item():
     user_id, error = decode_token(request)
     if error:
         return jsonify({'error': error}), 401
     
     data = request.get_json()
-    movie_id = data.get('movie_id')
-    if not movie_id:
-        return jsonify({'error': 'movie_id is required'}), 400
+    target_type = data.get('target_type')
+    target_value = data.get('target_value')
     
-    like = Like.query.filter_by(user_id=user_id, target_type='movie', target_value=movie_id).first()
+    if not target_type or not target_value:
+        return jsonify({'error': 'target_type and target_value are required'}), 400
+    
+    if target_type not in ['movie', 'director', 'genre']:
+        return jsonify({'error': 'Invalid target_type. Must be one of: movie, director, genre'}), 400
+    
+    like = Like.query.filter_by(user_id=user_id, target_type=target_type, target_value=target_value).first()
     if not like:
-        return jsonify({'message': 'LKike not found'}), 404
+        return jsonify({'message': 'Like not found'}), 404
     
     db.session.delete(like)
     db.session.commit()
-    return jsonify({'message': 'Like removed successfully'}), 200
+    return jsonify({'message': f'{target_type.capitalize()} unliked successfully'}), 200
 
 @likes_bp.route('', methods=['GET'])
-def get_liked_movies():
+def get_liked_items():
     user_id, error = decode_token(request)
     if error:
         return jsonify({'error': error}), 401
     
-    likes = Like.query.filter_by(user_id=user_id, target_type='movie').all()
-    liked_movies = [{'movie_id': like.target_value} for like in likes]
-    return jsonify({'liked_movies': liked_movies}), 200
+    target_type = request.args.get('target_type')  # Optional filter by type
+    
+    if target_type and target_type not in ['movie', 'director', 'genre']:
+        return jsonify({'error': 'Invalid target_type. Must be one of: movie, director, genre'}), 400
+    
+    query = Like.query.filter_by(user_id=user_id)
+    if target_type:
+        query = query.filter_by(target_type=target_type)
+    
+    likes = query.all()
+    liked_items = [{'target_type': like.target_type, 'target_value': like.target_value} for like in likes]
+    return jsonify({'liked_items': liked_items}), 200
