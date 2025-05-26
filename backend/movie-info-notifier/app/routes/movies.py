@@ -1,13 +1,17 @@
 from flask import Blueprint, request
+from app import db
+from app.models.movie import Movie
 from datetime import datetime, timedelta
 import os
 import requests
 from app.utils import (
     format_error_response, format_success_response,
-    validate_required_fields, get_date_range
+    validate_required_fields, get_date_range, get_movie_metadata
 )
 
 movies_bp = Blueprint('movies', __name__, url_prefix='/movies')
+
+KOBIS_API_BASE_URL = "https://www.kobis.or.kr/kobisopenapi/webservice/rest"
 
 def get_kobis_api_key():
     """KOBIS API 키를 가져옵니다."""
@@ -23,53 +27,96 @@ def search_movies():
         return format_error_response('Missing "title" query parameter')
     
     api_key = get_kobis_api_key()
-    url = "https://www.kobis.or.kr/kobisopenapi/webservice/rest/movie/searchMovieList.json"
+    url = f"{KOBIS_API_BASE_URL}/movie/searchMovieList.json"
     params = {
         'key': api_key,
-        'movieNm': title
+        'movieNm': title,
+        'itemPerPage': 10
     }
 
-    response = requests.get(url, params=params)
-    if response.status_code != 200:
-        return format_error_response('Failed to fetch data from KOFIC', 500)
+    try:
+        response = requests.get(url, params=params, timeout=5)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        return format_error_response('Failed to fetch data from KOBIS API', 500)
     
-    data = response.json()
+    try:
+        data = response.json()
+    except ValueError:
+        return format_error_response('Invalid response from KOBIS API', 500)
+    
     movie_list = data.get('movieListResult', {}).get('movieList', [])
+    
+    if not movie_list:
+        return format_success_response('No movies found', {'results': []})
+    
     results = []
     for movie in movie_list:
-        results.append({
-            'movie_code': movie.get('movieCd'),
+        movie_code = movie.get('movieCd')
+        if not movie_code:
+            continue
+            
+        movie_data = {
+            'movie_code': movie_code,
             'title': movie.get('movieNm'),
-            'open_date': movie.get('openDt'),
-            'director': movie.get('directors'),
-            'genre': movie.get('repGenreNm')
-        })
+            'director': movie.get('directors', [{}])[0].get('peopleNm', '미상'),
+            'actors': [actor.get('peopleNm') for actor in movie.get('actors', [])[:5]],
+            'genre': movie.get('genres', [{}])[0].get('genreNm', '기타'),
+            'country': movie.get('nations', [{}])[0].get('nationNm', '미상'),
+            'movie_type': movie.get('typeNm', '장편'),
+            'open_date': movie.get('openDt')
+        }
+        results.append(movie_data)
     
+    if not results:
+        return format_success_response('No movies found', {'results': []})
+        
     return format_success_response('Movies found', {'results': results})
 
 @movies_bp.route('/now_showing', methods=['GET'])
 def now_showing():
     yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y%m%d')
     api_key = get_kobis_api_key()
-    url = "https://www.kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.json"
+    url = f"{KOBIS_API_BASE_URL}/boxoffice/searchDailyBoxOfficeList.json"
     params = {
         'key': api_key,
         'targetDt': yesterday
     }
 
-    response = requests.get(url, params=params)
-    if response.status_code != 200:
+    try:
+        response = requests.get(url, params=params, timeout=5)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching boxoffice data: {str(e)}")
         return format_error_response('Failed to fetch boxoffice data', 500)
     
     data = response.json()
     box_office_list = data.get('boxOfficeResult', {}).get('dailyBoxOfficeList', [])
     results = []
+    
     for entry in box_office_list:
+        movie_code = entry.get('movieCd')
+        metadata, error = get_movie_metadata(movie_code)
+        if error:
+            print(f"Error fetching metadata for movie {movie_code}: {error}")
+            continue
+
+        # 영화 정보 저장
+        existing = Movie.query.filter_by(movie_id=movie_code).first()
+        if not existing:
+            new_movie = Movie(
+                movie_id=movie_code,
+                **metadata
+            )
+            db.session.add(new_movie)
+            db.session.commit()
+        
         results.append({
             'rank': entry.get('rank'),
-            'title': entry.get('movieNm'),
+            'movie_code': movie_code,
             'open_date': entry.get('openDt'),
-            'audience': entry.get('audiAcc')
+            'audience': entry.get('audiAcc'),
+            **metadata
         })
     
     return format_success_response('Now showing movies retrieved', {'now_showing': results})
@@ -79,7 +126,7 @@ def upcoming():
     today_str, two_months_later = get_date_range(60)  # 2개월 후
     
     api_key = get_kobis_api_key()
-    url = "https://www.kobis.or.kr/kobisopenapi/webservice/rest/movie/searchMovieList.json"
+    url = f"{KOBIS_API_BASE_URL}/movie/searchMovieList.json"
     
     all_movies = []
     total_pages = 10  # 10페이지까지 검색
@@ -103,14 +150,38 @@ def upcoming():
     for movie in all_movies:
         open_date = movie.get('openDt')
         if open_date and today_str < open_date <= two_months_later:  # 오늘부터 2개월 이내 개봉 영화만 포함
+            movie_code = movie.get('movieCd')
+            metadata, error = get_movie_metadata(movie_code)
+            if error or not metadata:
+                continue
+
+            # DB 저장
+            existing = Movie.query.filter_by(movie_id=movie_code).first()
+            if not existing:
+                new_movie = Movie(
+                    movie_id=movie_code,
+                    title=metadata['title'],
+                    genre=metadata['genre'],
+                    director=metadata['director'],
+                    release_date=metadata['release_date'],
+                    actors=','.join(metadata['actors']),
+                    country=metadata['country'],
+                    movie_type=metadata['movie_type']
+                )
+                db.session.add(new_movie)
+
             results.append({
-                'movie_code': movie.get('movieCd'),
-                'title': movie.get('movieNm'),
+                'movie_code': movie_code,
+                'title': metadata['title'],
                 'open_date': open_date,
-                'director': movie.get('directors'),
-                'genre': movie.get('repGenreNm')
+                'director': metadata['director'],
+                'genre': metadata['genre'],
+                'actors': metadata['actors'][:5],
+                'country': metadata['country'],
+                'movie_type': metadata['movie_type']
             })
-    
+
+    db.session.commit()
     # 개봉일 순으로 정렬
     results.sort(key=lambda x: x['open_date'])
     

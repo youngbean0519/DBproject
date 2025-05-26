@@ -1,7 +1,10 @@
 from flask import jsonify
+from app.models.movie import Movie
+from datetime import date
 import jwt
 import os
 import datetime
+import requests
 
 def decode_token(request):
     """JWT 토큰을 디코딩하여 user_id를 반환합니다."""
@@ -49,3 +52,51 @@ def validate_required_fields(data, required_fields):
     if missing_fields:
         return False, f"Missing required fields: {', '.join(missing_fields)}"
     return True, None
+
+def check_movie_not_exists(movie_id):
+    """영화가 데이터베이스에 존재하지 않는지 확인합니다."""
+    movie = Movie.query.filter_by(movie_id=movie_id).first()
+    if movie:
+        return False, "This movie is already in upcoming movies list"
+    return True, None
+
+def get_movie_metadata(movie_id):
+    """영화 정보를 가져옵니다."""
+    url = "https://www.kobis.or.kr/kobisopenapi/webservice/rest/movie/searchMovieInfo.json"
+    params = {
+        'key': os.getenv('KOFIC_API_KEY'),
+        'movieCd': movie_id
+    }
+    try:
+        response = requests.get(url, params=params, timeout=5)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching movie metadata: {str(e)}")
+        return None, f'Failed to fetch movie info from KOBIS: {str(e)}'
+    
+    try:
+        data = response.json()
+    except ValueError as e:
+        print(f"Error parsing JSON response: {str(e)}")
+        return None, 'Invalid JSON response from KOBIS'
+    
+    movie_info = data.get('movieInfoResult', {}).get('movieInfo', {})
+    if not movie_info:
+        return None, 'No movieInfo in API response'
+    
+    try:
+        return {
+            'title': movie_info.get('movieNm'),
+            'genre': movie_info.get('genres')[0]['genreNm'] if movie_info.get('genres') else None,
+            'director': movie_info.get('directors')[0]['peopleNm'] if movie_info.get('directors') else None,
+            'actors': [a['peopleNm'] for a in movie_info.get('actors', [])[:5]],
+            'country': movie_info.get('nations')[0]['nationNm'] if movie_info.get('nations') else None,
+            'movie_type': movie_info.get('typeNm') if movie_info.get('typeNm') else None,
+            'release_date': (
+                datetime.datetime.strptime(movie_info.get('openDt'), '%Y%m%d').date()
+                if movie_info.get('openDt') else None
+            )
+        }, None
+    except Exception as e:
+        print(f"Error parsing movie metadata: {str(e)}")
+        return None, f'Failed to parse movie metadata: {str(e)}'

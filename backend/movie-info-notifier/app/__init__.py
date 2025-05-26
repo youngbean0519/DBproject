@@ -16,6 +16,7 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
 
+    from app import models
     from app.routes.auth import auth_bp
     from app.routes.movies import movies_bp
     from app.routes.likes import likes_bp
