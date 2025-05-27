@@ -125,6 +125,6 @@ def get_liked_items():
         query = query.filter_by(target_type=target_type)
     
     likes = query.all()
-    liked_items = [{'target_type': like.target_type, 'target_value': like.target_value} for like in likes]
+    liked_items = [{'target_type': like.target_type, 'target_value': like.target_value, 'reasons': like.reasons} for like in likes]
     
     return format_success_response('Liked items retrieved successfully', {'liked_items': liked_items})

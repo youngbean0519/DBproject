@@ -72,11 +72,12 @@ def calculate_score(movie, preferences):
         score += 1
         reasons.append(f"type: {movie.movie_type}")
     
-    if movie.actors in preferences['actors']:
+    if movie.actors:
         for actor in movie.actors.split(','):
-            if actor.strip() in preferences['actors']:
+            actor = actor.strip()
+            if actor in preferences['actors']:
                 score += 2
-                reasons.append(f"actor: {actor.strip()}")
+                reasons.append(f"actor: {actor}")
                 break
     
     return score, "; ".join(reasons)
