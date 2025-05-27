@@ -22,11 +22,13 @@ def create_app():
     from app.routes.likes import likes_bp
     from app.routes.watchlist import watchlist_bp
     from app.routes.recommend import recommend_bp
+    from app.routes.admin import admin_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(movies_bp)
     app.register_blueprint(likes_bp)
     app.register_blueprint(watchlist_bp)
     app.register_blueprint(recommend_bp)
+    app.register_blueprint(admin_bp)
     
     return app

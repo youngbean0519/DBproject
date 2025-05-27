@@ -23,10 +23,10 @@ def get_recommendations():
         if not movie:
             continue
     
-        tag = " [개봉 예정]" if movie.release_date > date.today() else ""
+        #tag = " [개봉 예정]" if movie.release_date > date.today() else ""
         results.append({
             'movie_id': movie.movie_id,
-            'title': f"{movie.title}{tag}",
+            'title': f"{movie.title}",
             'release_date': movie.release_date.strftime('%Y-%m-%d'),
             'reason': rec.reason
         })

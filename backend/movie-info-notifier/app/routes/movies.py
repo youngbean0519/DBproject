@@ -56,14 +56,20 @@ def search_movies():
         if not movie_code:
             continue
             
+        # 영화 상세 정보 가져오기
+        metadata, error = get_movie_metadata(movie_code)
+        if error:
+            print(f"Error fetching metadata for movie {movie_code}: {error}")
+            continue
+            
         movie_data = {
             'movie_code': movie_code,
             'title': movie.get('movieNm'),
-            'director': movie.get('directors', [{}])[0].get('peopleNm', '미상'),
-            'actors': [actor.get('peopleNm') for actor in movie.get('actors', [])[:5]],
-            'genre': movie.get('genres', [{}])[0].get('genreNm', '기타'),
-            'country': movie.get('nations', [{}])[0].get('nationNm', '미상'),
-            'movie_type': movie.get('typeNm', '장편'),
+            'director': metadata.get('director', '미상'),
+            'actors': metadata.get('actors', []),
+            'genre': metadata.get('genre', '기타'),
+            'movie_type': metadata.get('movie_type', '장편'),
+            'country': metadata.get('country', '미상'),
             'open_date': movie.get('openDt')
         }
         results.append(movie_data)
@@ -173,12 +179,12 @@ def upcoming():
             results.append({
                 'movie_code': movie_code,
                 'title': metadata['title'],
-                'open_date': open_date,
                 'director': metadata['director'],
-                'genre': metadata['genre'],
                 'actors': metadata['actors'][:5],
+                'genre': metadata['genre'],
+                'movie_type': metadata['movie_type'],
                 'country': metadata['country'],
-                'movie_type': metadata['movie_type']
+                'open_date': open_date
             })
 
     db.session.commit()
