@@ -103,34 +103,31 @@ def now_showing():
     for entry in box_office_list:
         movie_code = entry.get('movieCd')
         metadata, error = get_movie_metadata(movie_code)
-        if error:
-            print(f"Error fetching metadata for movie {movie_code}: {error}")
+        if error or not metadata:
             continue
 
-        # 영화 정보 저장
-        existing = Movie.query.filter_by(movie_id=movie_code).first()
-        if not existing:
-            new_movie = Movie(
-                movie_id=movie_code,
-                **metadata
-            )
-            db.session.add(new_movie)
-            db.session.commit()
-        
         results.append({
             'rank': entry.get('rank'),
             'movie_code': movie_code,
+            'title': metadata['title'],
+            'director': metadata['director'],
+            'actors': metadata['actors'][:5],
+            'genre': metadata['genre'],
+            'movie_type': metadata['movie_type'],
+            'country': metadata['country'],
             'open_date': entry.get('openDt'),
-            'audience': entry.get('audiAcc'),
-            **metadata
+            'audience': entry.get('audiAcc')
         })
     
     return format_success_response('Now showing movies retrieved', {'now_showing': results})
 
 @movies_bp.route('/upcoming', methods=['GET'])
 def upcoming():
-    today_str, two_months_later = get_date_range(60)  # 2개월 후
-    
+    today = datetime.now().date()
+    three_months_later = today + timedelta(days=90)
+
+    Movie.query.filter(Movie.release_date < today).delete()
+
     api_key = get_kobis_api_key()
     url = f"{KOBIS_API_BASE_URL}/movie/searchMovieList.json"
     
@@ -144,52 +141,74 @@ def upcoming():
             'curPage': page
         }
         
-        response = requests.get(url, params=params)
-        if response.status_code != 200:
-            continue  # 한 페이지 실패해도 계속 진행
-        
+        try:
+            response = requests.get(url, params=params, timeout=5)
+            response.raise_for_status()
+        except requests.exceptions.RequestException:
+            continue
+
+    
         data = response.json()
         movie_list = data.get('movieListResult', {}).get('movieList', [])
         all_movies.extend(movie_list)
     
     results = []
     for movie in all_movies:
-        open_date = movie.get('openDt')
-        if open_date and today_str < open_date <= two_months_later:  # 오늘부터 2개월 이내 개봉 영화만 포함
-            movie_code = movie.get('movieCd')
-            metadata, error = get_movie_metadata(movie_code)
-            if error or not metadata:
-                continue
+        try:
+            open_date = datetime.strptime(movie.get('openDt'), '%Y%m%d').date()
+        except (ValueError, TypeError):
+            continue
+        
+        if not (today <= open_date <= three_months_later):
+            continue
+        
+        movie_code = movie.get('movieCd')
+        metadata, error = get_movie_metadata(movie_code)
+        if error or not metadata:
+            continue
 
-            # DB 저장
-            existing = Movie.query.filter_by(movie_id=movie_code).first()
-            if not existing:
-                new_movie = Movie(
-                    movie_id=movie_code,
-                    title=metadata['title'],
-                    genre=metadata['genre'],
-                    director=metadata['director'],
-                    release_date=metadata['release_date'],
-                    actors=','.join(metadata['actors']),
-                    country=metadata['country'],
-                    movie_type=metadata['movie_type']
-                )
-                db.session.add(new_movie)
+        # DB 저장
+        existing = Movie.query.filter_by(movie_id=movie_code).first()
+        if existing:
+            # 기존 영화 정보 업데이트
+            existing.title = metadata['title']
+            existing.genre = metadata['genre']
+            existing.director = metadata['director']
+            existing.release_date = metadata['release_date']
+            existing.actors = ','.join(metadata['actors'])
+            existing.country = metadata['country']
+            existing.movie_type = metadata['movie_type']
+            
+        else:    
+            new_movie = Movie(
+                movie_id=movie_code,
+                title=metadata['title'],
+                genre=metadata['genre'],
+                director=metadata['director'],
+                release_date=metadata['release_date'],
+                actors=','.join(metadata['actors']),
+                country=metadata['country'],
+                movie_type=metadata['movie_type']
+            )
+            db.session.add(new_movie)
 
-            results.append({
-                'movie_code': movie_code,
-                'title': metadata['title'],
-                'director': metadata['director'],
-                'actors': metadata['actors'][:5],
-                'genre': metadata['genre'],
-                'movie_type': metadata['movie_type'],
-                'country': metadata['country'],
-                'open_date': open_date
-            })
-
-    db.session.commit()
+        results.append({
+            'movie_code': movie_code,
+            'title': metadata['title'],
+            'director': metadata['director'],
+            'actors': metadata['actors'][:5],
+            'genre': metadata['genre'],
+            'movie_type': metadata['movie_type'],
+            'country': metadata['country'],
+            'open_date': open_date.strftime('%Y-%m-%d')
+        })
+    
+    try:
+        db.session.commit()
+    except Exception as e:
+        return format_error_response(f'Database error: {str(e)}', 500)
+    
     # 개봉일 순으로 정렬
     results.sort(key=lambda x: x['open_date'])
-    
     return format_success_response('Upcoming movies retrieved', {'upcoming_movies': results})
     
