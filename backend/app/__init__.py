@@ -4,7 +4,12 @@ from flask_migrate import Migrate
 from dotenv import load_dotenv
 import os
 
-load_dotenv()
+env = os.getenv('FLASK_ENV', 'development')
+
+if env == 'production':
+    load_dotenv('.env.production')
+else:
+    load_dotenv('.env.development')
 
 db = SQLAlchemy()
 migrate = Migrate()
