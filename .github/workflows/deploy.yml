@@ -23,6 +23,17 @@ jobs:
           source: "."
           target: "~/app"
       
+      - name: Copy frontend static files
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "frontend/*"
+          target: "/var/www/kinoletter"
+          rm: true
+
       - name: Run docker-compose on server
         uses: appleboy/ssh-action@v1.0.0
         with:
