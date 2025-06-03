@@ -30,9 +30,11 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_KEY }}
-          source: "frontend/*"
-          target: "/var/www/kinoletter"
-          rm: true
+          source: "./frontend"
+          target: "/var/www/kinoletter/"
+          recursive: true
+          overwrite: true
+          rm: false
 
       - name: Run docker-compose on server
         uses: appleboy/ssh-action@v1.0.0
