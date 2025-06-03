@@ -18,6 +18,24 @@
             import { apiFetch } from "./js/utils.js";
 
             const $ = s => document.querySelector(s);
+            
+            function cardHTML(m) {
+                return `
+                <li class="card">
+                <span><b>${m.title}</b> (${m.year||m.date||""})</span>
+                <button class="like" data-type="movie" data-val="${m.title}">♥</button>
+                <button class="pin"  data-id="${m.id||m.movie_id}">📌</button>
+                </li>`;
+            }
+
+            async function loadStatic() {
+            const now = await apiFetch("/movies/now_showing");
+            $("#now").innerHTML = now.map(cardHTML).join("");
+            const up  = await apiFetch("/movies/upcoming");
+            $("#up").innerHTML  = up .map(cardHTML).join("");
+            }
+            loadStatic();
+            
             $("#searchBtn").onclick = async () => {
                 const title = $("#q").value.trim();
                 if(!title) return;
@@ -25,12 +43,25 @@
                 $("#searchRes").innerHTML = data.results.map(m => `<li>${m.title} (${m.year})</li>`).join("");
             };
 
-            (async () => {
-                const now  = await apiFetch("/movies/now_showing");
-                const up   = await apiFetch("/movies/upcoming");
-                $("#now").innerHTML = now.map(x => `<li>${x.rank}. ${x.title}</li>`).join("");
-                $("#up").innerHTML  = up .map(x => `<li>${x.date} · ${x.title}</li>`).join("");
-            })();
+            document.body.addEventListener("click", async e => {
+                const btn = e.target.closest("button");
+                if (!btn) return;
+                try {
+                    if (btn.classList.contains("like")) {
+                    await apiFetch("/likes", {
+                        method:"POST",
+                        body: JSON.stringify({ target_type: btn.dataset.type, target_value: btn.dataset.val })
+                    });
+                    alert("좋아요 완료!");
+                    } else if (btn.classList.contains("pin")) {
+                    await apiFetch("/watchlist", {
+                        method:"POST",
+                        body: JSON.stringify({ movie_id: btn.dataset.id })
+                    });
+                    alert("찜 완료!");
+                    }
+                } catch (err) { alert(err.message); }
+            });
         </script>
     </body>
 </html>

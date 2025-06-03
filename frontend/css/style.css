@@ -56,3 +56,4 @@ button {
 
 button:hover { opacity: .9; }
 .error { color:#c00; margin-top:var(--spacing); text-align:center; }
+.card { display:flex; justify-content:space-between; align-items:center; padding:8px 4px; border-bottom:1px solid #eee; }
