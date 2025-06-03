@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="utf-8">
+        <title>Register | KinoLetter</title>
+        <link rel="stylesheet" href="css/style.css">
+    </head>
+    <body>
+        <form>
+            <h1>회원가입</h1>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <label style="display: flex; align-items: center; margin-top: 12px;">
+                <input type="checkbox" name="notify_by_email" value="true" style="margin-right: 6px;">
+                영화 메일 알림 수신
+            </label>
+            <button type="submit">Sign&nbsp;Up</button>
+            <div class="msg error"></div>
+            <p style="text-align: center; margin-top: 12px;">
+                이미 계정이 있으신가요? <a href="login.html">로그인</a>
+            </p>
+        </form>
+        <script type="module" src="js/auth.js"></script>
+    </body>
+</html>
