@@ -1,12 +1,16 @@
-export function apiFetch(path, options = {}) {
-    const token = localStorage.getItem("jwt");
-    const headers = { "Content-Type": "appication/json", ...(options.headers || {}) };
-    if(token) headers["Authorization"] = `Bearer ${token}`;
-    return fetch(path, { ...options, headers })
-        .then(async res => {
-            if(!res.ok) throw new Error((await res.json()).message || res.statusText);
-            return res.json();
-        });
+export async function apiFetch(path, options = {}) {
+    const token = localStorage.jwt;
+    const headers = {
+        "Content-Type": "appication/json",
+        ...(options.headers || {})
+    };
+    if(token) headers.Authorization = `Bearer ${token}`;
+    
+    const res = await fetch(path, { ...options, headers });
+    const text = await res.text();
+    if(!res.ok) throw new Error(text);
+    try { return JSON.parse(text); }
+    catch { return text; }
 }
 
 export function showMessage(targetEl, msg, isError = false) {
