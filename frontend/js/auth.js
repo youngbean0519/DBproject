@@ -8,6 +8,7 @@ function handleAuth(form, mode) {
         showMessage(msgEl, "Loading...");
         
         const raw = Object.fromEntries(new FormData(form));
+        raw.notify_by_email = form.notify_by_email.checked;
         const body = JSON.stringify(raw);
 
         try {
@@ -24,7 +25,7 @@ function handleAuth(form, mode) {
 }
 
 if(location.pathname.endsWith("login.html")) {
-    handleAuth(document.querySelector("form", "login"));
+    handleAuth(document.querySelector("form"), "login");
 }
 
 if(location.pathname.endsWith("register.html")) {

@@ -24,7 +24,7 @@ def register():
     
     email = data['email']
     password = data['password']
-    notify = data.get('notify_by_email', True)
+    notify = data.get('notify_by_email', False)
     
     existing_user = User.query.filter_by(email=email).first()
     if existing_user:

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="utf-8">
+        <title>추천</title>
+        <link rel="stylesheet" href="css/style.css">
+    </head>
+    <body>
+        <h2>추천 영화</h2><ul id="rec"></ul>
+
+        <script type="module" src="js/navbar.js"></script>
+        <script type="module">
+            import { apiFetch } from "./js/utils.js";
+            const data = await apiFetch("/recommend");   // GET
+            document.querySelector("#rec").innerHTML =
+                data.map(m => `<li>${m.title} (${m.score})</li>`).join("");
+        </script>
+    </body>
+</html>

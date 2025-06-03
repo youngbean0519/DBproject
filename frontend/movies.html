@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="utf-8">
+        <title>영화</title>
+        <link rel="stylesheet" href="css/style.css">
+    </head>
+    <body>
+        <input id="q" placeholder="영화 제목 검색" style="width:60%;padding:8px">
+        <button id="searchBtn">Search</button>
+
+        <h2>검색 결과</h2><ul id="searchRes"></ul>
+        <h2>현재 상영 Top10</h2><ul id="now"></ul>
+        <h2>개봉 예정</h2><ul id="up"></ul>
+
+        <script type="module" src="js/navbar.js"></script>
+        <script type="module">
+            import { apiFetch } from "./js/utils.js";
+
+            const $ = s => document.querySelector(s);
+            $("#searchBtn").onclick = async () => {
+                const title = $("#q").value.trim();
+                if(!title) return;
+                const data = await apiFetch(`/movies/search?title=${encodeURIComponent(title)}`);
+                $("#searchRes").innerHTML = data.results.map(m => `<li>${m.title} (${m.year})</li>`).join("");
+            };
+
+            (async () => {
+                const now  = await apiFetch("/movies/now_showing");
+                const up   = await apiFetch("/movies/upcoming");
+                $("#now").innerHTML = now.map(x => `<li>${x.rank}. ${x.title}</li>`).join("");
+                $("#up").innerHTML  = up .map(x => `<li>${x.date} · ${x.title}</li>`).join("");
+            })();
+        </script>
+    </body>
+</html>
