@@ -2,66 +2,19 @@
 <html lang="ko">
     <head>
         <meta charset="utf-8">
-        <title>영화</title>
+        <title>Movies | KinoLetter</title>
         <link rel="stylesheet" href="css/style.css">
     </head>
     <body>
-        <input id="q" placeholder="영화 제목 검색" style="width:60%;padding:8px">
-        <button id="searchBtn">Search</button>
-
-        <h2>검색 결과</h2><ul id="searchRes"></ul>
-        <h2>현재 상영 Top10</h2><ul id="now"></ul>
-        <h2>개봉 예정</h2><ul id="up"></ul>
-
+        <div class="container">
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="영화 검색...">
+                <button id="search-button">검색</button>
+            </div>
+            <div id="movies-container" class="movies-grid"></div>
+            <div class="msg error"></div>
+        </div>
         <script type="module" src="js/navbar.js"></script>
-        <script type="module">
-            import { apiFetch } from "./js/utils.js";
-
-            const $ = s => document.querySelector(s);
-            
-            function cardHTML(m) {
-                return `
-                <li class="card">
-                <span><b>${m.title}</b> (${m.year||m.date||""})</span>
-                <button class="like" data-type="movie" data-val="${m.title}">♥</button>
-                <button class="pin"  data-id="${m.id||m.movie_id}">📌</button>
-                </li>`;
-            }
-
-            async function loadStatic() {
-            const now = await apiFetch("/movies/now_showing");
-            $("#now").innerHTML = now.map(cardHTML).join("");
-            const up  = await apiFetch("/movies/upcoming");
-            $("#up").innerHTML  = up .map(cardHTML).join("");
-            }
-            loadStatic();
-            
-            $("#searchBtn").onclick = async () => {
-                const title = $("#q").value.trim();
-                if(!title) return;
-                const data = await apiFetch(`/movies/search?title=${encodeURIComponent(title)}`);
-                $("#searchRes").innerHTML = data.results.map(m => `<li>${m.title} (${m.year})</li>`).join("");
-            };
-
-            document.body.addEventListener("click", async e => {
-                const btn = e.target.closest("button");
-                if (!btn) return;
-                try {
-                    if (btn.classList.contains("like")) {
-                    await apiFetch("/likes", {
-                        method:"POST",
-                        body: JSON.stringify({ target_type: btn.dataset.type, target_value: btn.dataset.val })
-                    });
-                    alert("좋아요 완료!");
-                    } else if (btn.classList.contains("pin")) {
-                    await apiFetch("/watchlist", {
-                        method:"POST",
-                        body: JSON.stringify({ movie_id: btn.dataset.id })
-                    });
-                    alert("찜 완료!");
-                    }
-                } catch (err) { alert(err.message); }
-            });
-        </script>
+        <script type="module" src="js/movies.js"></script>
     </body>
 </html>

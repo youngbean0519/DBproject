@@ -2,30 +2,16 @@
 <html lang="ko">
     <head>
         <meta charset="utf-8">
-        <title>찜</title>
+        <title>시청목록 | KinoLetter</title>
         <link rel="stylesheet" href="css/style.css">
     </head>
     <body>
-        <h2>내 찜 목록</h2><ul id="watch"></ul>
-
+        <div class="container">
+            <h1>내 시청목록</h1>
+            <div id="watchlist-container" class="watchlist-grid"></div>
+            <div class="msg error"></div>
+        </div>
         <script type="module" src="js/navbar.js"></script>
-        <script type="module">
-            import { apiFetch } from "./js/utils.js";
-            const $ = s => document.querySelector(s);
-
-            async function load() {
-                const items = await apiFetch("/watchlist");      // GET
-                $("#watch").innerHTML = items.map(m=>`
-                <li>${m.title}
-                    <button data-id="${m.movie_id}">삭제</button>
-                </li>`).join("");
-            }
-            document.body.addEventListener("click", async e => {
-                if(e.target.tagName!=="BUTTON") return;
-                await apiFetch(`/watchlist/${e.target.dataset.id}`, { method:"DELETE" });
-                load();
-            });
-            load();
-        </script>
+        <script type="module" src="js/watchlist.js"></script>
     </body>
 </html>

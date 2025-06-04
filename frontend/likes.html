@@ -2,36 +2,16 @@
 <html lang="ko">
     <head>
         <meta charset="utf-8">
-        <title>좋아요</title>
+        <title>좋아요 목록 | KinoLetter</title>
         <link rel="stylesheet" href="css/style.css">
     </head>
     <body>
-        <h2>내 좋아요</h2><ul id="list"></ul>
-
+        <div class="container">
+            <h1>내가 좋아요한 영화</h1>
+            <div id="likes-container" class="likes-grid"></div>
+            <div class="msg error"></div>
+        </div>
         <script type="module" src="js/navbar.js"></script>
-        <script type="module">
-            import { apiFetch } from "./js/utils.js";
-            const $ = s => document.querySelector(s);
-
-            async function load() {
-                const data = await apiFetch("/likes");           // GET
-                $("#list").innerHTML = data.map(l => `
-                    <li>${l.target_value} (${l.target_type})
-                    <button data-type="${l.target_type}" data-val="${l.target_value}">취소</button></li>`
-                ).join("");
-            }
-            document.body.addEventListener("click", async e => {
-                if(e.target.tagName!=="BUTTON") return;
-                await apiFetch("/likes", {
-                    method: "DELETE",
-                    body: JSON.stringify({
-                        target_type: e.target.dataset.type,
-                        target_value: e.target.dataset.val
-                    })
-                });
-                load();
-            });
-            load();
-        </script>
+        <script type="module" src="js/likes.js"></script>
     </body>
 </html>

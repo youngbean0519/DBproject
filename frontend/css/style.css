@@ -57,3 +57,70 @@ button {
 button:hover { opacity: .9; }
 .error { color:#c00; margin-top:var(--spacing); text-align:center; }
 .card { display:flex; justify-content:space-between; align-items:center; padding:8px 4px; border-bottom:1px solid #eee; }
+
+/* 네비게이션 바 스타일 */
+.navbar {
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.nav-brand a {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+    text-decoration: none;
+}
+
+.nav-links {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.nav-links a {
+    color: #666;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.nav-links a:hover {
+    color: #333;
+}
+
+.nav-links a.active {
+    color: #007bff;
+    font-weight: 600;
+}
+
+.user-menu {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-left: 1rem;
+}
+
+.user-name {
+    color: #666;
+    font-weight: 500;
+}
+
+.logout-btn {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    color: #666;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.logout-btn:hover {
+    background-color: #e9ecef;
+    color: #333;
+}

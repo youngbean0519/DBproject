@@ -2,18 +2,27 @@
 <html lang="ko">
     <head>
         <meta charset="utf-8">
-        <title>추천</title>
+        <title>영화 추천 | KinoLetter</title>
         <link rel="stylesheet" href="css/style.css">
     </head>
     <body>
-        <h2>추천 영화</h2><ul id="rec"></ul>
-
+        <div class="container">
+            <h1>맞춤 영화 추천</h1>
+            <div class="filter-bar">
+                <select id="genre-filter">
+                    <option value="">모든 장르</option>
+                    <option value="action">액션</option>
+                    <option value="comedy">코미디</option>
+                    <option value="drama">드라마</option>
+                    <option value="horror">공포</option>
+                    <option value="romance">로맨스</option>
+                    <option value="sci-fi">SF</option>
+                </select>
+            </div>
+            <div id="recommendations-container" class="recommendations-grid"></div>
+            <div class="msg error"></div>
+        </div>
         <script type="module" src="js/navbar.js"></script>
-        <script type="module">
-            import { apiFetch } from "./js/utils.js";
-            const data = await apiFetch("/recommend");   // GET
-            document.querySelector("#rec").innerHTML =
-                data.map(m => `<li>${m.title} (${m.score})</li>`).join("");
-        </script>
+        <script type="module" src="js/recommend.js"></script>
     </body>
 </html>

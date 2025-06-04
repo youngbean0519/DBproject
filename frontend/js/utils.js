@@ -1,19 +1,54 @@
-export async function apiFetch(path, options = {}) {
-    const token = localStorage.jwt;
+const API_BASE_URL = 'http://localhost:5000/api';
+
+async function fetchAPI(endpoint, options = {}) {
+    const token = localStorage.getItem('token');
     const headers = {
-        "Content-Type": "application/json",
-        ...(options.headers || {})
+        'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
+        ...options.headers
     };
-    if(token) headers.Authorization = `Bearer ${token}`;
-    
-    const res = await fetch(path, { ...options, headers });
-    const text = await res.text();
-    if(!res.ok) throw new Error(text);
-    try { return JSON.parse(text); }
-    catch { return text; }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            ...options,
+            headers
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'API 요청 실패');
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('API Error:', error);
+        throw error;
+    }
 }
 
-export function showMessage(targetEl, msg, isError = false) {
-    targetEl.textContent = msg;
-    targetEl.className = isError ? "error" : "success";
+export const api = {
+    get: (endpoint) => fetchAPI(endpoint),
+    post: (endpoint, data) => fetchAPI(endpoint, {
+        method: 'POST',
+        body: JSON.stringify(data)
+    }),
+    put: (endpoint, data) => fetchAPI(endpoint, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+    }),
+    delete: (endpoint) => fetchAPI(endpoint, {
+        method: 'DELETE'
+    })
+};
+
+export function showError(element, message) {
+    element.textContent = message;
+    element.style.display = 'block';
+    setTimeout(() => {
+        element.style.display = 'none';
+    }, 3000);
+}
+
+export function redirectTo(url) {
+    window.location.href = url;
 }
