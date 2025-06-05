@@ -32,4 +32,11 @@ def send_notifications():
             'successful_sends': results['successful_sends'],
             'failed_sends': results['failed_sends']
         }
-    ) 
+    )
+
+@admin_bp.route('/check', methods=['GET'])
+def check_admin():
+    user_id, error = decode_token(request)
+    if error:
+        return format_error_response(error, 401)
+    return format_success_response('ok', {'is_admin': is_admin(user_id)})

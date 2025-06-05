@@ -1,53 +1,90 @@
 <!DOCTYPE html>
 <html lang="ko">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>영화 - MovieDB</title>
-        <link rel="stylesheet" href="css/style.css">
-        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    </head>
-    <body>
-        <nav class="navbar">
-            <div class="nav-brand">MovieDB</div>
-            <div class="nav-links">
-                <a href="movies.html" class="active">영화</a>
-                <a href="watchlist.html">시청목록</a>
-                <a href="likes.html">좋아요</a>
-                <button id="logoutBtn" class="btn-logout">로그아웃</button>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>영화 - MovieDB</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .container { max-width: 1200px; margin: 40px auto; padding: 32px 24px; }
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 1em 2em; background: #222; }
+        .nav-links { display: flex; gap: 2em; }
+        .nav-links a, .nav-links button {
+            color: #fff; text-decoration: none; font-weight: 500; background: none; border: none;
+            cursor: pointer; font-size: 1.1em; padding: 0.5em 1em;
+        }
+        .nav-links a.active, .nav-links button.active { border-bottom: 2px solid #fff; }
+        .logout-btn {
+            color: #fff; background: #e74c3c; border: none; border-radius: 4px; padding: 0.5em 1.2em;
+            margin-left: 1.5em; font-size: 1.05em; cursor: pointer; transition: background 0.2s;
+        }
+        .logout-btn:hover { background: #c0392b; }
+        @media (max-width: 800px) {
+            .container { max-width: 98vw; padding: 1em 0.5em; }
+            .nav-links { gap: 1em; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">KinoLetter</div>
+        <div class="nav-links" id="nav-links">
+            <a href="movies.html" id="nav-movies" class="active">영화</a>
+            <a href="watchlist.html" id="nav-watchlist">찜 목록</a>
+            <a href="likes.html" id="nav-likes">좋아요</a>
+            <a href="recommend.html" id="nav-recommend">추천 영화</a>
+            <button id="logoutBtn" class="logout-btn">로그아웃</button>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="movie-tabs">
+            <button class="tab-btn active" data-tab="search">영화 검색</button>
+            <button class="tab-btn" data-tab="nowShowing">현재 상영</button>
+            <button class="tab-btn" data-tab="upcoming">개봉 예정</button>
+        </div>
+        <div class="tab-content">
+            <!-- 검색 탭 -->
+            <div class="tab-pane active" id="search-tab">
+                <div class="search-section">
+                    <input type="text" id="searchInput" placeholder="영화 제목을 입력하세요...">
+                    <button id="searchBtn">검색</button>
+                </div>
+                <div id="searchResults" class="movie-grid"></div>
             </div>
-        </nav>
 
-        <div class="container">
-            <div class="movie-tabs">
-                <button class="tab-btn active" data-tab="search">영화 검색</button>
-                <button class="tab-btn" data-tab="nowShowing">현재 상영</button>
-                <button class="tab-btn" data-tab="upcoming">개봉 예정</button>
+            <!-- 현재 상영 탭 -->
+            <div class="tab-pane" id="nowShowing-tab">
+                <div id="nowShowing" class="movie-grid"></div>
             </div>
 
-            <div class="tab-content">
-                <!-- 검색 탭 -->
-                <div class="tab-pane active" id="search-tab">
-                    <div class="search-section">
-                        <input type="text" id="searchInput" placeholder="영화 제목을 입력하세요...">
-                        <button id="searchBtn">검색</button>
-                    </div>
-                    <div id="searchResults" class="movie-grid"></div>
-                </div>
-
-                <!-- 현재 상영 탭 -->
-                <div class="tab-pane" id="nowShowing-tab">
-                    <div id="nowShowing" class="movie-grid"></div>
-                </div>
-
-                <!-- 개봉 예정 탭 -->
-                <div class="tab-pane" id="upcoming-tab">
-                    <div id="upcoming" class="movie-grid"></div>
-                </div>
+            <!-- 개봉 예정 탭 -->
+            <div class="tab-pane" id="upcoming-tab">
+                <div id="upcoming" class="movie-grid"></div>
             </div>
         </div>
-
-        <script type="module" src="js/movies.js"></script>
-    </body>
+    </div>
+    <script type="module">
+    import { api } from './js/utils.js';
+    document.getElementById('logoutBtn').onclick = function() {
+        localStorage.removeItem('token');
+        window.location.href = 'login.html';
+    };
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const res = await api.get('/admin/check');
+            if (res.is_admin && !document.getElementById('nav-admin')) {
+                const navLinks = document.getElementById('nav-links');
+                const adminTab = document.createElement('a');
+                adminTab.href = "admin.html";
+                adminTab.id = "nav-admin";
+                adminTab.textContent = "관리자";
+                navLinks.insertBefore(adminTab, document.getElementById('logoutBtn'));
+            }
+        } catch (e) {}
+    });
+    </script>
+    <script type="module" src="js/movies.js"></script>
+</body>
 </html>

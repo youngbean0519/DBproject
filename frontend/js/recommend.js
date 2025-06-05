@@ -20,16 +20,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     function displayRecommendations(recommendations) {
         recommendationsContainer.innerHTML = recommendations.map(movie => `
             <div class="recommendation-card">
+                <div class="recommendation-actions-top">
+                    <button class="btn-watchlist" title="찜하기" onclick="addToWatchlist('${movie.movie_id}')">
+                        <i class="fas fa-bookmark"></i> 찜
+                    </button>
+                </div>
                 <img src="${movie.poster_url}" alt="${movie.title}">
                 <div class="recommendation-details">
                     <h3>${movie.title}</h3>
                     <p>${movie.release_year}</p>
                     <p>장르: ${movie.genres.join(', ')}</p>
                     <p>추천 이유: ${movie.recommendation_reason}</p>
-                </div>
-                <div class="recommendation-actions">
-                    <button onclick="addToWatchlist(${movie.id})">시청목록 추가</button>
-                    <button onclick="toggleLike(${movie.id})">좋아요</button>
                 </div>
             </div>
         `).join('');
@@ -45,11 +46,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadRecommendations();
 });
 
-// 시청목록에 추가
+// 시청목록(찜)에 추가
 async function addToWatchlist(movieId) {
     try {
         await api.post('/watchlist', { movie_id: movieId });
-        alert('시청목록에 추가되었습니다.');
+        alert('찜 목록에 추가되었습니다.');
     } catch (error) {
         alert(error.message);
     }
@@ -63,4 +64,15 @@ async function toggleLike(movieId) {
     } catch (error) {
         alert(error.message);
     }
-} 
+}
+
+// CSS 스타일 추가
+const style = document.createElement('style');
+style.textContent = `
+    .recommendation-actions-top {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 0.5em;
+    }
+`;
+document.head.append(style);

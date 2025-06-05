@@ -8,7 +8,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadLikes() {
         try {
-            const likes = await api.get('/likes');
+            const res = await api.get('/likes');
+            const likes = res.liked_items || [];
             displayLikes(likes);
         } catch (error) {
             showError(document.querySelector('.error'), error.message);
@@ -16,43 +17,61 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function displayLikes(likes) {
-        likesContainer.innerHTML = likes.map(like => `
-            <div class="like-item">
-                <img src="${like.movie.poster_url}" alt="${like.movie.title}">
-                <div class="item-details">
-                    <h3>${like.movie.title}</h3>
-                    <p>${like.movie.release_year}</p>
-                    <p>좋아요한 날짜: ${new Date(like.created_at).toLocaleDateString()}</p>
+        if (!likes.length) {
+            likesContainer.innerHTML = '<p>좋아요한 영화가 없습니다.</p>';
+            return;
+        }
+        likesContainer.innerHTML = likes.map(like => {
+            // 이유를 <ul>로 예쁘게 출력
+            let reasonsHTML = '';
+            if (like.reasons && Array.isArray(like.reasons) && like.reasons.length > 0) {
+                reasonsHTML = `
+                    <ul class="like-reasons">
+                        ${like.reasons.map(r => `<li><strong>${r.type}</strong>: ${r.value}</li>`).join('')}
+                    </ul>
+                `;
+            }
+            
+            return `
+                <div class="like-item">
+                    <div class="item-details">
+                        <h3>${like.title || '제목 없음'}</h3>
+                        ${reasonsHTML}
+                    </div>
+                    <div class="item-actions">
+                        <button onclick="removeLike('${like.movie_id}')">좋아요 취소</button>
+                    </div>
                 </div>
-                <div class="item-actions">
-                    <button onclick="removeLike(${like.movie.id})">좋아요 취소</button>
-                    <button onclick="addToWatchlist(${like.movie.id})">시청목록 추가</button>
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
-    // 초기 좋아요 목록 로드
+    window.removeLike = async function(movieId) {
+        try {
+            await api.delete('/likes', {
+                body: JSON.stringify({ movie_id: movieId }),
+                headers: { 'Content-Type': 'application/json' }
+            });
+            alert('좋아요가 취소되었습니다.');
+            loadLikes();
+        } catch (error) {
+            alert(error.message);
+        }
+    };
+
+    // 좋아요 버튼 클릭 시
+    window.addLike = async function(movieId, reasonsArray) {
+        try {
+            await api.post('/likes', {
+                movie_id: movieId,
+                reasons: reasonsArray // 예: [{type: "actor", value: "톰 행크스"}]
+            });
+            alert('좋아요가 추가되었습니다.');
+            loadLikes();
+        } catch (error) {
+            alert(error.message);
+        }
+    };
+
     loadLikes();
 });
-
-// 좋아요 취소
-async function removeLike(movieId) {
-    try {
-        await api.delete(`/likes/${movieId}`);
-        alert('좋아요가 취소되었습니다.');
-        location.reload();
-    } catch (error) {
-        alert(error.message);
-    }
-}
-
-// 시청목록에 추가
-async function addToWatchlist(movieId) {
-    try {
-        await api.post('/watchlist', { movie_id: movieId });
-        alert('시청목록에 추가되었습니다.');
-    } catch (error) {
-        alert(error.message);
-    }
-} 

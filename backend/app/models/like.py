@@ -5,6 +5,5 @@ class Like(db.Model):
 
     like_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
-    target_type = db.Column(db.String(20)) # movie, director, genre
-    target_value = db.Column(db.String(100))
+    movie_id = db.Column(db.String(50))
     reasons = db.Column(db.JSON, nullable=True)

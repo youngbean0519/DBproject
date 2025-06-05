@@ -8,52 +8,45 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadWatchlist() {
         try {
-            const watchlist = await api.get('/watchlist');
-            displayWatchlist(watchlist);
+            const res = await api.get('/watchlist');
+            // res가 { message: "...", watchlist: [...] } 형태이므로
+            displayWatchlist(res.watchlist || []);
         } catch (error) {
             showError(document.querySelector('.error'), error.message);
         }
     }
 
     function displayWatchlist(watchlist) {
-        watchlistContainer.innerHTML = watchlist.map(item => `
-            <div class="watchlist-item">
-                <img src="${item.movie.poster_url}" alt="${item.movie.title}">
-                <div class="item-details">
-                    <h3>${item.movie.title}</h3>
-                    <p>${item.movie.release_year}</p>
-                    <p>추가일: ${new Date(item.added_at).toLocaleDateString()}</p>
+        if (!watchlist.length) {
+            watchlistContainer.innerHTML = '<p>찜한 영화가 없습니다.</p>';
+            return;
+        }
+        watchlistContainer.innerHTML = watchlist.map(item => {
+            return `
+                <div class="watchlist-item">
+                    <div class="item-details">
+                        <h3>${item.title || '제목 없음'}</h3>
+                        <p>${item.director ? `감독: ${item.director}` : ''}</p>
+                        <p>${item.release_date ? `개봉일: ${item.release_date}` : ''}</p>
+                    </div>
+                    <div class="item-actions">
+                        <button onclick="removeFromWatchlist('${item.movie_id}')">찜 취소</button>
+                    </div>
                 </div>
-                <div class="item-actions">
-                    <button onclick="removeFromWatchlist(${item.movie.id})">삭제</button>
-                    <button onclick="markAsWatched(${item.movie.id})">시청완료</button>
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
-    // 초기 시청목록 로드
+    window.removeFromWatchlist = async function(movieId) {
+        if (!confirm('정말로 찜을 취소하시겠습니까?')) return;
+        try {
+            await api.delete(`/watchlist/${movieId}`);
+            alert('찜이 취소되었습니다.');
+            loadWatchlist();
+        } catch (error) {
+            alert(error.message);
+        }
+    };
+
     loadWatchlist();
 });
-
-// 시청목록에서 삭제
-async function removeFromWatchlist(movieId) {
-    try {
-        await api.delete(`/watchlist/${movieId}`);
-        alert('시청목록에서 삭제되었습니다.');
-        location.reload();
-    } catch (error) {
-        alert(error.message);
-    }
-}
-
-// 시청완료로 표시
-async function markAsWatched(movieId) {
-    try {
-        await api.put(`/watchlist/${movieId}`, { watched: true });
-        alert('시청완료로 표시되었습니다.');
-        location.reload();
-    } catch (error) {
-        alert(error.message);
-    }
-} 

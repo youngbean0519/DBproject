@@ -17,38 +17,28 @@ def extract_user_preferences(user_id):
     }
 
     for like in likes:
-        if like.target_type == 'genre':
-            preferences['genres'].add(like.target_value)
+        if not like.reasons:
+            continue
 
-        elif like.target_type == 'director':
-            preferences['directors'].add(like.target_value)
+        # movie_id로 메타데이터 가져오기
+        metadata, error = get_movie_metadata(like.movie_id)
+        if error or not metadata:
+            continue
 
-        elif like.target_type == 'movie':
-            if not like.reasons:
-                continue
-            
-            metadata, error = get_movie_metadata(like.target_value)
-            if error or not metadata:
-                continue;
-            
-            for reason in like.reasons:
-                reason_type = reason.get("type")
-                value = reason.get("value")
+        for reason in like.reasons:
+            reason_type = reason.get("type")
+            value = reason.get("value")
 
-                if reason_type == "genre" and metadata.get("genre") == value:
-                    preferences['genres'].add(value)
-
-                elif reason_type == "director" and metadata.get("director") == value:
-                    preferences['directors'].add(value)
-
-                elif reason_type == "actor" and value in metadata.get("actors", []):
-                    preferences['actors'].add(value)
-
-                elif reason_type == "country" and metadata.get("country") == value:
-                    preferences['countries'].add(value)
-
-                elif reason_type == "type" and metadata.get("movie_type") == value:
-                    preferences['types'].add(value)
+            if reason_type == "genre" and metadata.get("genre") == value:
+                preferences['genres'].add(value)
+            elif reason_type == "director" and metadata.get("director") == value:
+                preferences['directors'].add(value)
+            elif reason_type == "actor" and value in metadata.get("actors", []):
+                preferences['actors'].add(value)
+            elif reason_type == "country" and metadata.get("country") == value:
+                preferences['countries'].add(value)
+            elif reason_type == "type" and metadata.get("movie_type") == value:
+                preferences['types'].add(value)
     
     return preferences
 
@@ -87,8 +77,9 @@ def generate_recommendations(user_id):
 
     preferences = extract_user_preferences(user_id)
 
-    liked_movies = Like.query.filter_by(user_id=user_id, target_type='movie').with_entities(Like.target_value).all()
-    liked_movies_ids = {movie_id for (movie_id, ) in liked_movies}
+    # 좋아요한 영화의 movie_id 집합 만들기
+    liked_movies = Like.query.filter_by(user_id=user_id).all()
+    liked_movies_ids = {str(like.movie_id) for like in liked_movies}
     candidates = Movie.query.all()
 
     for movie in candidates:

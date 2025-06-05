@@ -3,8 +3,12 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 import os
+# 개발자 모드 용
+#from flask_cors import CORS
 
 env = os.getenv('FLASK_ENV', 'development')
+
+print(f"현재 모드: {env}")
 
 if env == 'production':
     load_dotenv('.env.production')
@@ -20,6 +24,9 @@ def create_app():
 
     db.init_app(app)
     migrate.init_app(app, db)
+
+    # 개발자 용 CORS 설정
+ #   CORS(app, supports_credentials=True)
 
     from app import models
     from app.routes.auth import auth_bp

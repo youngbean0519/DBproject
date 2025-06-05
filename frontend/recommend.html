@@ -1,28 +1,108 @@
 <!DOCTYPE html>
 <html lang="ko">
-    <head>
-        <meta charset="utf-8">
-        <title>영화 추천 | KinoLetter</title>
-        <link rel="stylesheet" href="css/style.css">
-    </head>
-    <body>
-        <div class="container">
-            <h1>맞춤 영화 추천</h1>
-            <div class="filter-bar">
-                <select id="genre-filter">
-                    <option value="">모든 장르</option>
-                    <option value="action">액션</option>
-                    <option value="comedy">코미디</option>
-                    <option value="drama">드라마</option>
-                    <option value="horror">공포</option>
-                    <option value="romance">로맨스</option>
-                    <option value="sci-fi">SF</option>
-                </select>
-            </div>
-            <div id="recommendations-container" class="recommendations-grid"></div>
-            <div class="msg error"></div>
+<head>
+    <meta charset="utf-8">
+    <title>추천 영화 | KinoLetter</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .container { max-width: 1200px; margin: 40px auto; padding: 32px 24px; }
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 1em 2em; background: #222; }
+        .nav-links { display: flex; gap: 2em; }
+        .nav-links a, .nav-links button {
+            color: #fff; text-decoration: none; font-weight: 500; background: none; border: none;
+            cursor: pointer; font-size: 1.1em; padding: 0.5em 1em;
+        }
+        .nav-links a.active, .nav-links button.active { border-bottom: 2px solid #fff; }
+        .logout-btn {
+            color: #fff; background: #e74c3c; border: none; border-radius: 4px; padding: 0.5em 1.2em;
+            margin-left: 1.5em; font-size: 1.05em; cursor: pointer; transition: background 0.2s;
+        }
+        .logout-btn:hover { background: #c0392b; }
+        @media (max-width: 800px) {
+            .container { max-width: 98vw; padding: 1em 0.5em; }
+            .nav-links { gap: 1em; }
+        }
+        .recommend-item {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1em 1.5em;
+            margin-bottom: 1.5em;
+            background: #fafafa;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">KinoLetter</div>
+        <div class="nav-links" id="nav-links">
+            <a href="movies.html" id="nav-movies">영화</a>
+            <a href="watchlist.html" id="nav-watchlist">찜 목록</a>
+            <a href="likes.html" id="nav-likes">좋아요</a>
+            <a href="recommend.html" id="nav-recommend" class="active">추천 영화</a>
+            <button id="logoutBtn" class="logout-btn">로그아웃</button>
         </div>
-        <script type="module" src="js/navbar.js"></script>
-        <script type="module" src="js/recommend.js"></script>
-    </body>
+    </nav>
+    <div class="container">
+        <h1>추천 영화</h1>
+        <div id="recommend-container"></div>
+    </div>
+    <script type="module">
+    import { api } from './js/utils.js';
+    window.addToWatchlist = async function(movieId) {
+        try {
+            await api.post('/watchlist', { movie_id: movieId });
+            alert('찜 목록에 추가되었습니다.');
+        } catch (e) {
+            alert(e.message || '찜 추가 실패');
+        }
+    };
+    document.getElementById('logoutBtn').onclick = function() {
+        localStorage.removeItem('token');
+        window.location.href = 'login.html';
+    };
+    document.addEventListener('DOMContentLoaded', async () => {
+        // 추천 영화 출력
+        try {
+            const res = await api.get('/recommend');
+            const list = (res.recommendations || []);
+            const container = document.getElementById('recommend-container');
+            if (list.length === 0) {
+                container.innerHTML = '<p>추천 영화가 없습니다.</p>';
+            } else {
+                container.innerHTML = list.map(movie => `
+                    <div class="recommend-item">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h3>${movie.title || movie.movie_title || '제목 없음'}</h3>
+                            <button class="btn-watchlist" title="찜하기" onclick="addToWatchlist('${movie.movie_id}')">
+                                <i class="fas fa-bookmark"></i>
+                            </button>
+                        </div>
+                        <p>개봉일: ${movie.release_date || ''}</p>
+                        <p>추천 이유: ${movie.reason || ''}</p>
+                    </div>
+                `).join('');
+            }
+        } catch (e) {
+            document.getElementById('recommend-container').textContent = e.message || '추천 정보를 불러올 수 없습니다.';
+        }
+
+        // 관리자 탭 동적 추가
+        try {
+            const res = await api.get('/admin/check'); // { is_admin: true/false }
+            if (res.is_admin) {
+                const navLinks = document.getElementById('nav-links');
+                const adminTab = document.createElement('a');
+                adminTab.href = "admin.html";
+                adminTab.id = "nav-admin";
+                adminTab.textContent = "관리자";
+                navLinks.insertBefore(adminTab, document.getElementById('logoutBtn'));
+            }
+        } catch (e) {
+            // admin이 아니면 무시
+        }
+    });
+    </script>
+    <script type="module" src="js/navbar.js"></script>
+    <script type="module" src="js/recommend.js"></script>
+</body>
 </html>

@@ -1,4 +1,7 @@
-const API_BASE_URL = 'http://129.154.48.98';
+// 배포용
+//const API_BASE_URL = 'http://129.154.48.98';
+// 개발용
+const API_BASE_URL = 'http://localhost:5000';
 
 async function fetchAPI(endpoint, options = {}) {
     const token = localStorage.getItem('token');
@@ -36,8 +39,9 @@ export const api = {
         method: 'PUT',
         body: JSON.stringify(data)
     }),
-    delete: (endpoint) => fetchAPI(endpoint, {
-        method: 'DELETE'
+    delete: (endpoint, data) => fetchAPI(endpoint, {
+        method: 'DELETE',
+        body: data ? JSON.stringify(data) : undefined
     })
 };
 

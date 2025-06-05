@@ -206,9 +206,14 @@ def upcoming():
     try:
         db.session.commit()
     except Exception as e:
-        return format_error_response(f'Database error: {str(e)}', 500)
+        db.session.rollback()  # 롤백 추가
+        if 'duplicate key value violates unique constraint' in str(e):
+            # 중복 에러는 무시하고 진행
+            pass
+        else:
+            return format_error_response(f'Database error: {str(e)}', 500)
     
     # 개봉일 순으로 정렬
     results.sort(key=lambda x: x['open_date'])
     return format_success_response('Upcoming movies retrieved', {'upcoming_movies': results})
-    
+
