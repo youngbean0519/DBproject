@@ -14,6 +14,9 @@ body {
     flex-direction: column;
     align-items:center;
     padding-top: 56px;
+    font-family: 'Noto Sans KR', sans-serif;
+    line-height: 1.6;
+    background-color: #f5f5f5;
 }
 
 form {
@@ -60,67 +63,193 @@ button:hover { opacity: .9; }
 
 /* 네비게이션 바 스타일 */
 .navbar {
-    background-color: #ffffff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #1a1a1a;
     padding: 1rem 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    color: white;
 }
 
-.nav-brand a {
+.nav-brand {
     font-size: 1.5rem;
     font-weight: bold;
-    color: #333;
-    text-decoration: none;
 }
 
 .nav-links {
     display: flex;
-    gap: 1.5rem;
+    gap: 2rem;
     align-items: center;
 }
 
 .nav-links a {
-    color: #666;
+    color: white;
     text-decoration: none;
-    font-weight: 500;
-    transition: color 0.2s;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: background-color 0.3s;
 }
 
-.nav-links a:hover {
-    color: #333;
-}
-
+.nav-links a:hover,
 .nav-links a.active {
-    color: #007bff;
-    font-weight: 600;
+    background-color: #333;
 }
 
-.user-menu {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-left: 1rem;
-}
-
-.user-name {
-    color: #666;
-    font-weight: 500;
-}
-
-.logout-btn {
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
-    color: #666;
+.btn-logout {
+    background-color: #dc3545;
+    color: white;
+    border: none;
     padding: 0.5rem 1rem;
     border-radius: 4px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background-color 0.3s;
 }
 
-.logout-btn:hover {
-    background-color: #e9ecef;
+.btn-logout:hover {
+    background-color: #c82333;
+}
+
+/* 검색 섹션 */
+.search-section {
+    margin: 2rem 0;
+    display: flex;
+    gap: 1rem;
+}
+
+.search-section input {
+    flex: 1;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.search-section button {
+    padding: 0.8rem 1.5rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.search-section button:hover {
+    background-color: #0056b3;
+}
+
+/* 영화 섹션 */
+.movie-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.movie-sections h2 {
+    margin-bottom: 1rem;
     color: #333;
+}
+
+.movie-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+/* 영화 카드 */
+.movie-card {
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.3s;
+    padding: 1rem;
+}
+
+.movie-card:hover {
+    transform: translateY(-5px);
+}
+
+.movie-card img {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+}
+
+.movie-info {
+    padding: 1rem;
+}
+
+.movie-info h3 {
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    color: #333;
+}
+
+.movie-detail {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.movie-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.movie-actions button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #666;
+    transition: color 0.3s;
+    padding: 0.5rem;
+}
+
+.movie-actions button:hover {
+    color: #007bff;
+}
+
+/* 에러 메시지 */
+.error {
+    color: #dc3545;
+    padding: 1rem;
+    background-color: #f8d7da;
+    border-radius: 4px;
+    margin: 1rem 0;
+    display: none;
+}
+
+/* 토스트 메시지 */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 4px;
+    z-index: 1000;
+    animation: fadeInOut 3s ease-in-out;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translate(-50%, 20px); }
+    10% { opacity: 1; transform: translate(-50%, 0); }
+    90% { opacity: 1; transform: translate(-50%, 0); }
+    100% { opacity: 0; transform: translate(-50%, -20px); }
+}
+
+/* 버튼 스타일 */
+.btn-like.active i,
+.btn-watchlist.active i {
+    color: #dc3545;
+}
+
+.btn-like:hover i,
+.btn-watchlist:hover i {
+    transform: scale(1.2);
 }

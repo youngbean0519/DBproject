@@ -1,20 +1,47 @@
 <!DOCTYPE html>
 <html lang="ko">
     <head>
-        <meta charset="utf-8">
-        <title>Movies | KinoLetter</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>KinoLetter - 영화 검색</title>
         <link rel="stylesheet" href="css/style.css">
     </head>
     <body>
-        <div class="container">
-            <div class="search-bar">
-                <input type="text" id="search-input" placeholder="영화 검색...">
-                <button id="search-button">검색</button>
+        <nav class="navbar">
+            <div class="nav-brand">KinoLetter</div>
+            <div class="nav-links">
+                <a href="movies.html" class="active">영화 검색</a>
+                <a href="likes.html">좋아요</a>
+                <a href="watchlist.html">찜 목록</a>
+                <a href="recommend.html">추천 영화</a>
+                <button id="logoutBtn" class="btn-logout">로그아웃</button>
             </div>
-            <div id="movies-container" class="movies-grid"></div>
-            <div class="msg error"></div>
-        </div>
-        <script type="module" src="js/navbar.js"></script>
+        </nav>
+
+        <main class="container">
+            <div class="search-section">
+                <input type="text" id="searchInput" placeholder="영화 제목을 입력하세요">
+                <button id="searchBtn">검색</button>
+            </div>
+
+            <div class="movie-sections">
+                <section class="search-results">
+                    <h2>검색 결과</h2>
+                    <div id="searchResults" class="movie-grid"></div>
+                </section>
+
+                <section class="now-showing">
+                    <h2>현재 상영작</h2>
+                    <div id="nowShowing" class="movie-grid"></div>
+                </section>
+
+                <section class="upcoming">
+                    <h2>개봉 예정작</h2>
+                    <div id="upcoming" class="movie-grid"></div>
+                </section>
+            </div>
+        </main>
+
         <script type="module" src="js/movies.js"></script>
     </body>
 </html>
