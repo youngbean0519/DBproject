@@ -109,65 +109,104 @@ button:hover { opacity: .9; }
     background-color: #c82333;
 }
 
-/* 검색 섹션 */
-.search-section {
-    margin: 2rem 0;
+/* 탭 시스템 */
+.movie-tabs {
     display: flex;
     gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 1rem;
+}
+
+.tab-btn {
+    padding: 0.8rem 1.5rem;
+    background: none;
+    border: none;
+    color: #666;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-radius: 4px;
+    width: auto;
+}
+
+.tab-btn:hover {
+    background-color: #f0f0f0;
+}
+
+.tab-btn.active {
+    background-color: var(--primary);
+    color: white;
+}
+
+.tab-content {
+    width: 100%;
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+/* 검색 섹션 개선 */
+.search-section {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
 }
 
 .search-section input {
     flex: 1;
-    padding: 0.8rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    padding: 1rem;
+    border: 2px solid #eee;
+    border-radius: 8px;
     font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+.search-section input:focus {
+    border-color: var(--primary);
+    outline: none;
 }
 
 .search-section button {
-    padding: 0.8rem 1.5rem;
-    background-color: #007bff;
+    width: auto;
+    padding: 1rem 2rem;
+    background-color: var(--primary);
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.3s;
 }
 
-.search-section button:hover {
-    background-color: #0056b3;
-}
-
-/* 영화 섹션 */
-.movie-sections {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-}
-
-.movie-sections h2 {
-    margin-bottom: 1rem;
-    color: #333;
-}
-
-.movie-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1.5rem;
-}
-
-/* 영화 카드 */
+/* 영화 카드 개선 */
 .movie-card {
-    background-color: white;
-    border-radius: 8px;
+    position: relative;
+    background: white;
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     transition: transform 0.3s;
-    padding: 1rem;
 }
 
 .movie-card:hover {
     transform: translateY(-5px);
+}
+
+.movie-card .rank {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 1.2rem;
 }
 
 .movie-card img {
@@ -177,11 +216,11 @@ button:hover { opacity: .9; }
 }
 
 .movie-info {
-    padding: 1rem;
+    padding: 1.5rem;
 }
 
 .movie-info h3 {
-    margin-bottom: 1rem;
+    margin: 0 0 0.5rem 0;
     font-size: 1.2rem;
     color: #333;
 }
@@ -204,12 +243,18 @@ button:hover { opacity: .9; }
     cursor: pointer;
     font-size: 1.2rem;
     color: #666;
-    transition: color 0.3s;
+    transition: all 0.3s;
     padding: 0.5rem;
+    width: auto;
 }
 
 .movie-actions button:hover {
-    color: #007bff;
+    color: var(--primary);
+    transform: scale(1.1);
+}
+
+.movie-actions button.active {
+    color: #dc3545;
 }
 
 /* 에러 메시지 */
