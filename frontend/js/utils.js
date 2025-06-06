@@ -1,7 +1,7 @@
 // 배포용
-const API_BASE_URL = 'http://129.154.48.98';
+//const API_BASE_URL = 'http://129.154.48.98';
 // 개발용
-//const API_BASE_URL = 'http://localhost:5000';
+const API_BASE_URL = 'http://localhost:5000';
 
 async function fetchAPI(endpoint, options = {}) {
     const token = localStorage.getItem('token');

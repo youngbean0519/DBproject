@@ -28,7 +28,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const endpoint = location.pathname.endsWith('register.html') ? '/auth/register' : '/auth/login';
                 const response = await api.post(endpoint, data);
                 
-                if (response.token) {
+                if (location.pathname.endsWith('register.html')) {
+                    // 회원가입 성공 시 로그인 화면으로 이동
+                    redirectTo('/login.html');
+                } else if (response.token) {
                     localStorage.setItem('token', response.token);
                     localStorage.setItem('user', JSON.stringify(response.user));
                     redirectTo('/movies.html');

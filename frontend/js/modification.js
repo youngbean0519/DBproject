@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const result = await res.json();
             resultMsg.textContent = result.message;
             resultMsg.style.color = res.ok ? 'green' : 'red';
-            if (res.ok) form.reset();
+            if (res.ok) setTimeout(() => window.location.href = 'movies.html', 1500);
         } catch (err) {
             resultMsg.textContent = '오류가 발생했습니다.';
             resultMsg.style.color = 'red';
@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (res.ok) {
                 // 로그아웃 처리 및 메인으로 이동
                 localStorage.removeItem('token');
-                setTimeout(() => window.location.href = 'index.html', 1500);
+                setTimeout(() => window.location.href = 'login.html', 1500);
             }
         } catch (err) {
             resultMsg.textContent = '오류가 발생했습니다.';
