@@ -4,7 +4,7 @@ from flask_migrate import Migrate
 from dotenv import load_dotenv
 import os
 # 개발자 모드 용
-#from flask_cors import CORS
+from flask_cors import CORS
 
 env = os.getenv('FLASK_ENV', 'development')
 
@@ -26,7 +26,7 @@ def create_app():
     migrate.init_app(app, db)
 
     # 개발자 용 CORS 설정
- #   CORS(app, supports_credentials=True)
+    CORS(app, supports_credentials=True)
 
     from app import models
     from app.routes.auth import auth_bp
