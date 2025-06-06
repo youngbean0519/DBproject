@@ -57,7 +57,7 @@ def like_movie():
 
     return format_success_response("Movie liked successfully", status_code=201)
 
-@likes_bp.route('', methods=['DELETE'])
+@likes_bp.route('/delete', methods=['POST'])
 def unlike_movie():
     user_id, error = decode_token(request)
     if error:

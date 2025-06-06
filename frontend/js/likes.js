@@ -48,9 +48,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     window.removeLike = async function(movieId) {
         try {
-            await api.delete('/likes', {
-                body: JSON.stringify({ movie_id: movieId }),
-                headers: { 'Content-Type': 'application/json' }
+            await api.post('/likes/delete', {
+                movie_id: movieId,
+                _method: 'DELETE'
             });
             alert('좋아요가 취소되었습니다.');
             loadLikes();
