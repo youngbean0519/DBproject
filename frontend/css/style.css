@@ -200,13 +200,14 @@ button:hover { opacity: .9; }
 .movie-card .rank {
     position: absolute;
     top: 10px;
-    left: 10px;
+    right: 10px;
     background: rgba(0,0,0,0.8);
     color: white;
     padding: 0.5rem 1rem;
     border-radius: 20px;
     font-weight: bold;
     font-size: 1.2rem;
+    z-index: 1;
 }
 
 .movie-card img {
