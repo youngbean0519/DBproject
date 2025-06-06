@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <h3>${movie.title}</h3>
                 <p class="movie-detail">감독: ${movie.director}</p>
                 <p class="movie-detail">장르: ${movie.genre}</p>
-                <p class="movie-detail">개봉일: ${movie.release_date}</p>
+                <p class="movie-detail">개봉일: ${movie.open_date}</p>
                 <div class="movie-actions">
                     ${isUpcoming ? 
                         `<button class="btn-watchlist" data-movie-id="${movieId}" title="찜하기">
