@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>회원 정보 수정</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav>
+        <!-- 네비게이션 바 예시 -->
+        <a href="movies.html">홈</a>
+        <!-- 다른 탭들 추가 -->
+    </nav>
+    <main>
+        <h2>회원 정보 수정</h2>
+        <form id="modification-form">
+            <label for="email">이메일 변경</label>
+            <input type="email" id="email" name="email" placeholder="새 이메일">
+
+            <label for="password">비밀번호 변경</label>
+            <input type="password" id="password" name="password" placeholder="새 비밀번호">
+
+            <label>
+                <input type="checkbox" id="notify_by_email" name="notify_by_email">
+                이메일 수신 동의
+            </label>
+
+            <button type="submit">수정하기</button>
+        </form>
+        <button id="withdraw-btn" style="margin-top:20px; color:red;">회원 탈퇴</button>
+        <div id="result-message"></div>
+    </main>
+    <script src="js/modification.js"></script>
+</body>
+</html>

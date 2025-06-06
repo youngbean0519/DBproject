@@ -56,16 +56,6 @@ async function addToWatchlist(movieId) {
     }
 }
 
-// 좋아요 토글
-async function toggleLike(movieId) {
-    try {
-        await api.post('/likes', { movie_id: movieId });
-        alert('좋아요 상태가 변경되었습니다.');
-    } catch (error) {
-        alert(error.message);
-    }
-}
-
 // CSS 스타일 추가
 const style = document.createElement('style');
 style.textContent = `

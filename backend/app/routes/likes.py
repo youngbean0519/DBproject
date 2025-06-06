@@ -86,10 +86,17 @@ def get_liked_movies():
     likes = Like.query.filter_by(user_id=user_id).all()
     liked_items = []
     for like in likes:
-        movie = Movie.query.filter_by(movie_id=like.movie_id).first()
-        liked_items.append({
-            'movie_id': like.movie_id,
-            'reasons': like.reasons,
-            'title': f"{movie.title}" if movie else '제목 없음'
-        })
+        metadata, error = get_movie_metadata(like.movie_id)
+        if error:
+            liked_items.append({
+                'movie_id': like.movie_id,
+                'reasons': like.reasons,
+                'title': '제목 없음'
+            })
+        else:
+            liked_items.append({
+                'movie_id': like.movie_id,
+                'reasons': like.reasons,
+                'title': metadata.get('title', '제목 없음')
+            })
     return format_success_response('Liked movies retrieved successfully', {'liked_items': liked_items})
