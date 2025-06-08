@@ -13,4 +13,3 @@ class Watchlist(db.Model):
     country = db.Column(db.String(50))
     movie_type = db.Column(db.String(50))
     release_date = db.Column(db.Date)
- #   notified = db.Column(db.Boolean, default=False)
